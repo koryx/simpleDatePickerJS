@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="simpleDatePicker.css">
+</head>
+<body>
+    <div id="simpledp" style="width: 200px; margin: 0 auto;"></div>
+    <script src="simpledatepicker.min.js"></script>
+    <script>
+        const sdp = new simpleDatePicker('#simpledp', {
+            // activeDay: 12,               // set active day if not current day
+            // activeMonth: 2,              // set active month if not current month
+            // activeYear: 2023,            // set active year if not current year
+            // maxYears: 5,                 // set +/- available years to show, default 3
+            // maxDays: 7,                  // set number of visible days, recommended odd number, default 5
+            // allowPrevDate: 'false',      // allow selection of a date earlier than the current date, default true
+            // datePattern: "DD-MM-YYYY",   // default YYYY/MM/DD
+            // showArrows: 'false'          // show arrows, default true
+            // arrowHtml: '<div></div>'     // arrow element, default svg code
+            // inputType: "text",           // selected date input type, default "hidden"
+            // inputId: "myInput",          // selected date input id, default "selectedDate"
+        });
+    </script>
+</body>
+</html>

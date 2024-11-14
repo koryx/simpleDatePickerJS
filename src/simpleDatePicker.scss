@@ -1,0 +1,126 @@
+:root {
+    --defaultColor: #000;
+    --defaultBgColor: #b1b1b1;
+    --activeColor: #405D80;
+    --arrowColor: #b1b1b1;
+    --arrowHoverColor: #fff;
+    --arrowBgColor: #9E0B28;
+    --arrowHoverBgColor: #550414;
+    --rowHeight: 30px;
+}
+
+.simpleDatePicker {
+    width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+    color: var(--defaultColor);
+    background-color: var(--defaultBGColor);
+    border: 1px solid var(--defaultColor);
+    .years, .months {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25em;
+        height: var(--rowHeight);
+        ul {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25em;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: calc(100% - 30px);
+            height: 100%;
+            overflow: hidden;
+            li {
+                position: absolute;
+                left: 0;
+                top: 100%;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                opacity: 0;
+                transition: opacity 0.3s ease-in, transform 0s ease-in;
+                transition-delay: 0s, 0.3s;
+                &.active {
+                    top: 0;
+                    opacity: 1;
+                    transition: all 0.3s ease-in;
+                    transition-delay: 0s;
+                }
+            }
+        }
+        .active {
+            font-weight: 700;
+            color: var(--activeColor);
+        }
+    }
+    .days {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25em;
+        height: var(--rowHeight);
+        ul {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: calc(100% - 30px);
+            height: 100%;
+            overflow: hidden;
+            li {
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                flex-shrink: 0;
+                transition: none;
+                opacity: 1;
+                &.anim {
+                    opacity: 1;
+                    will-change: transform;
+                    transition: transform 0.3s ease-in, opacity 0s ease-in;
+                }
+            }
+        }
+        .active {
+            font-weight: 700;
+            color: var(--activeColor);
+        }
+    }
+    .arrow {
+        position: relative;
+        width: 25px;
+        height: 25px;
+        background-color: var(--arrowBgColor);
+        box-sizing: border-box;
+        transition: all 0.3s ease-in;
+        cursor: pointer;
+        &:hover {
+            background-color: var(--arrowHoverBgColor);
+        }
+        svg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 15px;
+            height: 15px;
+            fill: var(--arrowColor);
+            transition: all 0.3s ease-in;
+            &:hover { fill: var(--arrowHoverColor); }
+        }
+        &.arrow-prev { transform: scale(-1);}
+    }
+}
