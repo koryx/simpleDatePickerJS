@@ -1,5 +1,7 @@
 # simpleDatePicker
-  
+
+![simpledatepicker](https://github.com/user-attachments/assets/37e70483-4d68-4dff-8242-357f38806542)
+
 
 ## Example of use:
   
