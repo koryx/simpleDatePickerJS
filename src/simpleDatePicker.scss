@@ -93,6 +93,7 @@
                     transition: transform 0.3s ease-in, opacity 0s ease-in;
                 }
             }
+            &.dragging li.anim { transition: none; user-select: none; }
         }
         .active {
             font-weight: 700;
@@ -106,6 +107,7 @@
         background-color: var(--arrowBgColor);
         box-sizing: border-box;
         transition: all 0.3s ease-in;
+        user-select: none;
         cursor: pointer;
         &:hover {
             background-color: var(--arrowHoverBgColor);

@@ -20,6 +20,10 @@ var simpleDatePicker = (function () {
             this.currentDay = new Date().getDate();
             this.currentMonth = new Date().getMonth();
             this.currentYear = new Date().getFullYear();
+            this.mouseMoveListener = null;
+            this.mouseDownListener = null;
+            this.mouseUpListener = null;
+            this.mouseLeaveListener = null;
 
             this.init();
         }
@@ -34,7 +38,7 @@ var simpleDatePicker = (function () {
             if(this.showArrows=='true') this.drawArrow(yearContent, 'prev');
             yearContent.appendChild(yearList);
             if(this.showArrows=='true') this.drawArrow(yearContent, 'next');
-            yearList.innerHTML = this.drawYear();
+            yearList.appendChild(this.drawYear());
             calendar.appendChild(yearContent);
             
             const monthContent = document.createElement("div");
@@ -43,7 +47,7 @@ var simpleDatePicker = (function () {
             if(this.showArrows=='true') this.drawArrow(monthContent, 'prev');
             monthContent.appendChild(monthList);
             if(this.showArrows=='true') this.drawArrow(monthContent, 'next');
-            monthList.innerHTML = this.drawMonth(this.activeMonth);
+            monthList.appendChild(this.drawMonth(this.activeMonth));
             calendar.appendChild(monthContent);
             
             const dayContent = document.createElement("div");
@@ -52,17 +56,17 @@ var simpleDatePicker = (function () {
             if(this.showArrows=='true') this.drawArrow(dayContent, 'prev');
             dayContent.appendChild(dayList);
             if(this.showArrows=='true') this.drawArrow(dayContent, 'next');
-            dayList.innerHTML = this.drawDayList(this.activeDay, this.daysInMonth);
+            dayList.appendChild(this.drawDayList(this.activeDay, this.daysInMonth));
             calendar.appendChild(dayContent);
         
             element.appendChild(calendar);
-
             this.daysView();
             setTimeout(()=>{
                 this.element.querySelectorAll('.days ul li').forEach(item => {
                     item.classList.add('anim');
                 });
             }, 100);
+
             const input = document.createElement("input");
             input.setAttribute("type", this.inputType);
             input.setAttribute("id", this.inputId);
@@ -86,27 +90,46 @@ var simpleDatePicker = (function () {
         drawYear() {
             const ymin  = this.allowPrevDate=='true' ? this.activeYear - this.maxYears : this.currentYear;
             const ymax  = this.activeYear + this.maxYears + 1;
-            let html = '';
+            const yearContainers = document.createDocumentFragment();
+            
             for (let i = ymin; i < ymax ; i++) {
-                html += (i==this.activeYear) ? '<li class="year active"><span>' + i + '</span></li>' : '<li class="year"><span>' + i + '</span></li>';
+                const year = document.createElement("li");
+                // year.style.opacity = '0';
+                year.classList.add('year');
+                (i==this.activeYear) ? year.classList.add('active') : '';
+                year.innerHTML = '<span>' + i + '</span>';
+                yearContainers.appendChild(year);
             }
-            return html;
+
+            return yearContainers;
         }
         
         drawMonth(a) {
-            let html = '';
+            const monthsContainer = document.createDocumentFragment();
+
             for (let i = 1; i < 13; i++) {
-                html += (i-1==a) ? '<li class="month active"><span>' + this.getMonthName(i, this.langLocale) + '</span></li>' : '<li class="month"><span>' + this.getMonthName(i, this.langLocale) + '</span></li>';
+                const month = document.createElement("li");
+                month.classList.add('month');
+                (i-1==a) ? month.classList.add('active') : '';
+                month.innerHTML = '<span>' + this.getMonthName(i, this.langLocale) + '</span>';
+                monthsContainer.appendChild(month);
             }
-            return html;
+            return monthsContainer;
         }
         
         drawDayList(d, dayM) {
-            let html = '';
+            const dayContainer = document.createDocumentFragment();
+
             for (let i = 1; i <= dayM; i++) {
-                html += (i==d) ? '<li class="day active"><span>' + i + '</span></li>' : '<li class="day"><span>' + i + '</span></li>';
+                const day = document.createElement("li");
+                day.classList.add('day');
+                day.setAttribute('data-day', i);
+                (i==d) ? day.classList.add('active') : '';
+                day.innerHTML = '<span>' + i + '</span>';
+                dayContainer.appendChild(day);
             }
-            return html;
+
+            return dayContainer;
         }
 
         // creates a list of days with the correct number of days for the month after changing the year or the month
@@ -119,7 +142,12 @@ var simpleDatePicker = (function () {
             if(this.allowPrevDate!='true' && this.isSameYear() && this.isSameMonth() && parseInt(newDay)<parseInt(this.currentDay) ) {
                 newDayValue = this.currentDay;
             }
-            this.element.querySelector('.days ul').innerHTML = this.drawDayList(newDayValue, newdaysInMonth);
+            const daysList = this.element.querySelector('.days ul');
+            while (daysList.firstChild) {
+                daysList.removeChild(daysList.firstChild);
+            }
+            daysList.appendChild(this.drawDayList(newDayValue, newdaysInMonth));
+
             this.element.querySelectorAll('.days ul li').forEach(item => {
                 item.classList.remove('anim');
             });
@@ -129,6 +157,7 @@ var simpleDatePicker = (function () {
                     item.classList.add('anim');
                 });
             }, 100);
+            this.eventDragListeners();
         }
 
         // puts the selected day in the middle
@@ -182,11 +211,15 @@ var simpleDatePicker = (function () {
                 const nodesMonth = Array.from(this.element.querySelectorAll('.months ul li'));
                 const indexMonth = nodesMonth.findIndex(item => item.classList.contains('active'));
                 if(indexMonth<this.currentMonth) {
-                    this.element.querySelector('.months ul').innerHTML = this.drawMonth(this.currentMonth);
+                    const monthList = this.element.querySelector('.months ul');
+                    while (monthList.firstChild) {
+                        monthList.removeChild(monthList.firstChild);
+                    }
+                    monthList.appendChild(this.drawMonth(this.currentMonth));
                 }
             }
             this.drawDays();
-            this.selectedDateValue();
+            this.selectedDateValue(this.element);
         }
 
         changeMonth(dir) {
@@ -196,7 +229,7 @@ var simpleDatePicker = (function () {
                 nodes[index].classList.remove('active');
                 dir==0 ? nodes[this.prevEl(index, 0)].classList.add('active') : nodes[this.nextEl(index, 11)].classList.add('active');
                 this.drawDays();
-                this.selectedDateValue();
+                this.selectedDateValue(this.element);
             }
         }
 
@@ -210,7 +243,7 @@ var simpleDatePicker = (function () {
                 this.element.querySelectorAll('.days ul li').forEach(item => {
                     item.style.transform =  'translateX(' + (-1 * this.liWidth * changeCells) + 'px)';
                 });
-                this.selectedDateValue();
+                this.selectedDateValue(this.element);
             }
         }
 
@@ -229,13 +262,108 @@ var simpleDatePicker = (function () {
             return item == this.currentDay ? true : false;
         }
 
-        selectedDateValue() {
-            const year = this.element.querySelector('.years ul li.active').textContent.trim();
-            const months = Array.from(this.element.querySelectorAll('.months ul li'));
+        selectedDateValue(element) {
+            const year = element.querySelector('.years ul li.active').textContent.trim();
+            const months = Array.from(element.querySelectorAll('.months ul li'));
             const month = months.findIndex(item => item.classList.contains('active'));
-            const day = this.element.querySelector('.days ul li.active').textContent.trim();
+            const day = element.querySelector('.days ul li.active').textContent.trim();
             const selectedDate = new Date(year, month, day);
-            this.element.querySelector('input').value = this.formatDate(selectedDate, this.datePattern);
+            element.querySelector('input').value = this.formatDate(selectedDate, this.datePattern);
+        }
+
+        // Snap to closest day on release
+        snapToClosestDay(element, daysList, daysItems, translateX) {
+            let closest = null;
+            let minDist = Infinity;
+            
+            const parentRect = daysList.parentElement.getBoundingClientRect();
+            const parentCenter = parentRect.left + parentRect.width / 2; // Center of visible area
+        
+            daysItems.forEach(li => {
+                const rect = li.getBoundingClientRect();
+                const centerDist = Math.abs(rect.left + rect.width / 2 - parentCenter);
+                if (centerDist < minDist) {
+                    minDist = centerDist;
+                    closest = li;
+                }
+            });
+        
+            if (closest) {
+                const targetX = parentCenter - closest.getBoundingClientRect().left - closest.offsetWidth / 2;
+                translateX += targetX; // Adjust final position
+        
+                daysItems.forEach(li => {
+                    li.style.transform = `translateX(${translateX}px)`;
+                });
+        
+                // Highlight the selected day
+                closest.classList.add('active');
+                daysItems.forEach(li => {
+                    if (li !== closest) li.classList.remove('active');
+                });
+        
+                // Update selected date value (if needed)
+                this.selectedDateValue(this.element);
+            }
+        }
+
+        eventDragListeners() {
+            const daysList = document.querySelector('.days ul');
+            const daysItems = [...daysList.children];
+            
+            let isDragging = false;
+            let startDragX = 0;
+            let translateX = 0;
+            let prevTranslateX = 0;
+            
+            function getTranslateX(daysItems) {
+                const style = window.getComputedStyle(daysItems[0]);
+                const matrix = new DOMMatrix(style.transform);
+                return matrix.m41 || 0; // Extract translateX
+            }
+            
+            this.mouseDownListener = (e) => {
+                isDragging = true;
+                startDragX = e.pageX;
+                prevTranslateX = getTranslateX(daysItems);
+                daysList.style.cursor = 'grabbing';
+                daysList.classList.add('dragging');
+                
+                // Add mousemove event listener
+                this.mouseMoveListener = (e) => {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    
+                    const moveX = e.pageX - startDragX; // Drag distance
+                    translateX = prevTranslateX + moveX;
+                    
+                    // Apply translation to all <li> elements
+                    daysItems.forEach(li => {
+                        li.style.transform = `translateX(${translateX}px)`;
+                    });
+                };
+                
+                daysList.addEventListener('mousemove', this.mouseMoveListener);
+            };
+            daysList.addEventListener('mousedown', this.mouseDownListener);
+
+            this.mouseLeaveListener = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                this.snapToClosestDay(this.element, daysList, daysItems, translateX);
+                daysList.removeEventListener('mousemove', this.mouseMoveListener);
+            };
+            daysList.addEventListener('mouseleave', this.mouseLeaveListener);
+
+            this.mouseUpListener = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                daysList.style.cursor = 'grab';
+                daysList.classList.remove('dragging');
+                this.snapToClosestDay(this.element, daysList, daysItems, translateX);
+                daysList.removeEventListener('mousemove', this.mouseMoveListener);
+            };
+            daysList.addEventListener('mouseup', this.mouseUpListener);
         }
 
         init() {
@@ -248,6 +376,7 @@ var simpleDatePicker = (function () {
                 this.element.querySelector('.days .arrow-prev').addEventListener('click', () => this.changeDay(0));
                 this.element.querySelector('.days .arrow-next').addEventListener('click', () => this.changeDay(1));
             }
+            this.eventDragListeners();
         }
     }
 
