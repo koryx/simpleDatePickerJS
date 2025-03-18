@@ -1,7 +1,6 @@
 # simpleDatePicker
 
-![simpledatepicker](https://github.com/user-attachments/assets/37e70483-4d68-4dff-8242-357f38806542)
-
+![obraz](https://github.com/user-attachments/assets/d5c77d30-42bb-460c-819e-9891bdd4ba9a)
 
 ## Example of use:
   
